@@ -72,9 +72,7 @@ void loop() {
 
       remoteButton = Serial.parseInt();
       buttonOperation(remoteButton);
-      
       }
-
       ////////////////////////////////////////////////////////////
   
     // Barrido de búsqueda
@@ -108,18 +106,9 @@ void loop() {
         delay(10);
 
         }
-      
-      if (Estado[LED[N]] == 1 || Estado[LED[N]] == 3 && (millis() / 500) % 2 == 0){
-        delay(4);
-        digitalWrite(Pin_Verde, HIGH);
-        delay(1);
-        digitalWrite(Pin_Verde, LOW);
-        }
-      if (Estado[LED[N]] == 2 || Estado[LED[N]] == 3 && (millis() / 500) % 2 == 1){
-        digitalWrite(Pin_Rojo, HIGH);
-        delay(5);
-        digitalWrite(Pin_Rojo, LOW);}}
 
+        ledsRefresh(LED[N]);
+      }
     }
 
 
@@ -171,6 +160,24 @@ void loop() {
       digitalWrite(Rele_5y7, LOW);
       digitalWrite(Rele_6, LOW);
       }
+
+}
+
+// FC: actualizacion del estado de los leds
+
+void ledsRefresh(int NLED) {
+
+  if (Estado[NLED] == 1 || Estado[NLED] == 3 && (millis() / 500) % 2 == 0){
+        delay(4);
+        digitalWrite(Pin_Verde, HIGH);
+        delay(1);
+        digitalWrite(Pin_Verde, LOW);
+        }
+  if (Estado[NLED] == 2 || Estado[NLED] == 3 && (millis() / 500) % 2 == 1){
+        digitalWrite(Pin_Rojo, HIGH);
+        delay(5);
+        digitalWrite(Pin_Rojo, LOW);
+        }
 
 }
 
