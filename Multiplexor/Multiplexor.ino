@@ -48,6 +48,7 @@ void setup() {
   pinMode(Rele_6, OUTPUT);
   pinMode(Rele_5y7, OUTPUT);
   Serial.begin(baudRate);
+  Serial.setTimeout(0); //FC: Esto lo que hace es que el Serial.parseInt no se quede mucho tiempo esperando data
 
   corr = 0;
   Volt_A = 0;
@@ -65,15 +66,24 @@ void loop() {
 
   ////////// CONTROL REMOTO POR COMUNICACION SERIAL //////////
 
-      if (Serial.available() > 0) {
+      if (Serial.available() > 0) {  // FC: Serial avalaible se fija si hay data en el puerto serial y devuelve el numero de caracteres que encuentra (ej: si envio 123, devuelve 3)
+        
+        remoteButton = Serial.parseInt();  // FC: leo el entero disponible en la comunicacion serial, si hay un terminador entonces lo saca, por ej: envio 5'\n' -> devuelve 5
 
-      Rem = 1; // activo el modo REMoto
-      Estado[6] = 2; // pongo el led R/L en rojo
+        // FC: luego de haber leido el entero, tiro todo lo demas que haya en el puerto serial, por ejemplo, si envio 5'\n', 
+        // con la linea anterior leo el 5 y en esta linea tiro el '\n', esto es para que el if no se ejecute dos veces, que es lo que provocaba que los leds queden apagadas por un ratito
+        while (Serial.available() > 0) Serial.read();  
 
-      remoteButton = Serial.parseInt();
-      buttonOperation(remoteButton);
+
+        //FC: si el boton "apretado" remotamente no es el 6, entonces forza el modo remoto (si es el 6 entonces opera normalmente)
+        if (remoteButton != 6) {
+        Rem = 1; // activo el modo REMoto
+        Estado[6] = 2; // pongo el led R/L en rojo
+        }
+
+        buttonOperation(remoteButton);
       }
-      ////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
   
     // Barrido de búsqueda
     for (int N = 0; N < 8; N++) {
@@ -86,21 +96,13 @@ void loop() {
         digitalWrite(CH_B, CHB[N]);
         digitalWrite(CH_C, CHC[N]);
 
-        //sprintf(mensaje, "N = %d: %d%d%d", N, CHA[N], CHB[N], CHC[N]);
-        //Serial.println(mensaje);
-
         //FC: aca es donde efectivamente se lee el estado del pin a partir de un pin comun y usando el multiplexor de botones
         buttonState = digitalRead(COM_IN);
         
         if (buttonState != PreviousButtonState[BTN[N]]) {    //FC: si el estado del boton cambio (lo presione o deje de presionar), entonces continua
-        //sprintf(mensaje, "BTN %d: %d", BTN[N], buttonState);
-        //Serial.println(mensaje);
-          if (buttonState == HIGH && (Rem == 0 || BTN[N] == 6 )) {  //FC: si (el boton esta presionado) y (rem == 0 o estamos viendo el boton 6) entonces segui 
-          
-          buttonOperation(BTN[N]);
 
-          sprintf(mensaje, "corriente %d, Voltaje_A %d, Voltaje_B %d", corr, Volt_A, Volt_B);
-          Serial.println(mensaje);
+          if (buttonState == HIGH && (Rem == 0 || BTN[N] == 6 )) {  //FC: si (el boton esta presionado) y (rem == 0 o estamos viendo el boton 6) entonces segui 
+          buttonOperation(BTN[N]);
           }
         PreviousButtonState[BTN[N]] = buttonState;
         delay(10);
@@ -206,9 +208,7 @@ void buttonOperation(int button) {
     case 2:  //EL EXCEPCIONAL MIDE SG2 EN LOS 2 LOCK INS, SINO VOLVES AL DEFAULT.          
       Volt_B = (Volt_B + 1) % 2;
       Estado[1] = 1 - Volt_B;
-      Serial.println(Estado[1]);
       Estado[2] = Volt_B + (Volt_A == 0 ? 1 : 0);
-      Serial.println(Estado[2]);
       break;
 
     case 3:
@@ -286,7 +286,3 @@ void buttonOperation(int button) {
   }
 
 }
-
-
-
-
