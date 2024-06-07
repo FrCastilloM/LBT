@@ -51,6 +51,6 @@ coef = 1
 
 ls332.upload_curve(27, name, SN, data_format, limit, coef)
 
-#%% Resivo que se haya cargado bien
+#%% Reviso que se haya cargado bien
 
 ls332.get_curve_data(27)
