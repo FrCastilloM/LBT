@@ -1,4 +1,4 @@
-// ACTUALIZACION ABRIL 2024 PARA CONTROL REMOTO POR COMUNICACION SERIAL: FRANCISCO CASTILLO / FRANCISCO BENEGAS
+// ACTUALIZADO 11 DE JUNIO 2024 PARA CONTROL REMOTO POR COMUNICACION SERIAL: FRANCISCO CASTILLO / FRANCISCO BENEGAS
 
 
 // Constants
@@ -14,7 +14,9 @@ const int Rele_1 = 10;  //ROJO     // RELÉ 1
 const int Rele_6 = 11;  //NARANJA  // RELÉ 6
 const int Rele_5y7 = 12;  //AMARILLO // RELÉS 5 Y 7 EN PARALELO
 
-int remoteButton; // variable para el boton "presionado" remotamente
+// variables para el control remoto
+int remoteButtons;
+int remoteButton; 
 
 // Arrays
 int CHA[8] = {0, 1, 0, 1, 0, 1, 0, 1};
@@ -68,20 +70,37 @@ void loop() {
 
       if (Serial.available() > 0) {  // FC: Serial avalaible se fija si hay data en el puerto serial y devuelve el numero de caracteres que encuentra (ej: si envio 123, devuelve 3)
         
-        remoteButton = Serial.parseInt();  // FC: leo el entero disponible en la comunicacion serial, si hay un terminador entonces lo saca, por ej: envio 5'\n' -> devuelve 5
+        remoteButtons = Serial.parseInt();  // FC: leo el entero disponible en la comunicacion serial, si hay un terminador entonces lo saca, por ej: envio 5'\n' -> devuelve 5
 
         // FC: luego de haber leido el entero, tiro todo lo demas que haya en el puerto serial, por ejemplo, si envio 5'\n', 
         // con la linea anterior leo el 5 y en esta linea tiro el '\n', esto es para que el if no se ejecute dos veces, que es lo que provocaba que los leds queden apagadas por un ratito
         while (Serial.available() > 0) Serial.read();  
 
+        // FC: transformo el numero a un string
+        String strButtons = String(remoteButtons);
 
-        //FC: si el boton "apretado" remotamente no es el 6, entonces forza el modo remoto (si es el 6 entonces opera normalmente)
-        if (remoteButton != 6) {
-        Rem = 1; // activo el modo REMoto
-        Estado[6] = 2; // pongo el led R/L en rojo
+        // FC: recorro cada digito en la cadena
+        for (int i = 0; i < strButtons.length(); i++) {
+          char strButton = strButtons.charAt(i); // obtengo caracter en posicion i
+          int remoteButton = strButton - '0'; // lo devuelvo a su caracter numerico
+          
+          //FC: si el boton "apretado" remotamente no es el 6, entonces forza el modo remoto (si es el 6 entonces opera normalmente)
+          if (remoteButton != 6) {
+          Rem = 1; // activo el modo REMoto
+          Estado[6] = 2; // pongo el led R/L en rojo
+          }
+
+          buttonOperation(remoteButton);
         }
 
-        buttonOperation(remoteButton);
+        // FC: transformo el array de estados a un string
+        String estadoStr = "";
+
+        for (int i = 1; i < 7; i++) {
+          estadoStr += String(Estado[i]);
+        }
+
+        Serial.println(estadoStr); // FC: Este string es lo que lee Labview
       }
   ////////////////////////////////////////////////////////////
   
