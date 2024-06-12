@@ -33,8 +33,6 @@ int Volt_A = 0;
 int Volt_B = 0;
 int Rem = 0;
 
-char mensaje[40];
-
 long baudRate = 115200;
 
 void setup() {
@@ -92,16 +90,18 @@ void loop() {
 
           buttonOperation(remoteButton);
         }
-
-        // FC: transformo el array de estados a un string
-        String estadoStr = "";
-
-        for (int i = 1; i < 7; i++) {
-          estadoStr += String(Estado[i]);
-        }
-
-        Serial.println(estadoStr); // FC: Este string es lo que lee Labview
       }
+      
+      // FC: translado la informacion del estado del multiplexor a un string y lo mando al puerto serial
+      
+      String estadoStr = "";
+
+      for (int i = 1; i < 7; i++) {
+          estadoStr += String(Estado[i]);
+      }
+
+      Serial.println(estadoStr); // FC: Este string es lo que lee Labview
+
   ////////////////////////////////////////////////////////////
   
     // Barrido de búsqueda
