@@ -24,5 +24,8 @@ def loadtxt(filename, data_format = r"-?\d+(?:\.\d*)?(?:\,\d*)?(?:[Ee][-+]?\d+)?
         
         for j in range(n):
             out[j].append(X[j])
-    
+
+    for j in range(n):
+        out[j] = np.array(out[j])
+        
     return out
